@@ -207,7 +207,7 @@ imagen_filtro_adaptado = filtro_gaussiano_adaptativo(imagen_ruido, mapa_sigma)
 # =============================================================================================================
 
 '''Grafica de una unica imagen'''
-#plt.imshow(imagen_filtro_adaptado, cmap='gray', vmin=0.0, vmax=1.0)
+#plt.imshow(imagen_ruido, cmap='gray', vmin=0.0, vmax=1.0)
 
 '''Grafica de curvas RMSE | Valores entre 0 y 6 |'''
 #graficar_rmse(sigmas, resultados)
@@ -219,7 +219,7 @@ imagen_filtro_adaptado = filtro_gaussiano_adaptativo(imagen_ruido, mapa_sigma)
 #graficar_F_mu(puntos_control[:,0], puntos_control[:,1])
 
 '''Grafica de comparación de flitros y su diferencia'''
-#comparar_filtros_imagen(imagen_filtro, imagen_filtro_adaptado)
+comparar_filtros_imagen(imagen_filtro, imagen_filtro_adaptado)
 #================================================================================================================
 
 plt.show()
