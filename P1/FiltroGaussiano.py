@@ -181,13 +181,42 @@ def comparar_filtros_imagen(imagen_global, imagen_adaptativo):
     return fig
 
 
+def calcular_rmse(imagen_filtrada: np.ndarray, imagen_original: np.ndarray):
+    
+    cuad = np.zeros((256, 256), dtype=bool)
+    cuad[64:192, 64:192] = True
+
+    y, x = np.ogrid[:256, :256]        
+    circ = (x - 127.5)**2 + (y - 127.5)**2 <= 32**2
+
+    mascaras_dict = {
+        "global": np.ones_like(imagen_filtrada, dtype=bool), 
+        "fondo": ~cuad, 
+        "cuadrado": cuad & ~circ, 
+        "circulo": circ
+    }
+    resultados_dict = {}
+
+    for llave, masc in mascaras_dict.items():
+        
+        diff = imagen_filtrada[masc] - imagen_original[masc]
+        rmse_valor = np.sqrt(np.mean(diff**2))
+        resultados_dict[llave] = rmse_valor
+
+    return resultados_dict
+
+
+
+
 rng = np.random.default_rng(23)
 
 
 imagen_original = construir_imagen()
 imagen_ruido = rng.poisson(imagen_original * 40)/40
 
-kernel_global, kernel_referencia = kernel_gauss(1.6), kernel_gauss(1.9)
+sigma_kernel_global = 1.6
+
+kernel_global, kernel_referencia = kernel_gauss(sigma_kernel_global), kernel_gauss(1.9)
 
 imagen_filtro = convolucion(kernel_global, imagen_ruido)
 
@@ -207,7 +236,7 @@ imagen_filtro_adaptado = filtro_gaussiano_adaptativo(imagen_ruido, mapa_sigma)
 # =============================================================================================================
 
 '''Grafica de una unica imagen'''
-#plt.imshow(imagen_ruido, cmap='gray', vmin=0.0, vmax=1.0)
+plt.imshow(imagen_suavizada, cmap='gray', vmin=0.0, vmax=1.0)
 
 '''Grafica de curvas RMSE | Valores entre 0 y 6 |'''
 #graficar_rmse(sigmas, resultados)
@@ -219,8 +248,24 @@ imagen_filtro_adaptado = filtro_gaussiano_adaptativo(imagen_ruido, mapa_sigma)
 #graficar_F_mu(puntos_control[:,0], puntos_control[:,1])
 
 '''Grafica de comparación de flitros y su diferencia'''
-comparar_filtros_imagen(imagen_filtro, imagen_filtro_adaptado)
+#comparar_filtros_imagen(imagen_filtro, imagen_filtro_adaptado)
 #================================================================================================================
 
 plt.show()
 
+
+'''Estudio y comparación RMSE entre filtros'''
+#=========================================================================================================================
+rmse_globales = calcular_rmse(imagen_filtro, imagen_original)
+rmse_adaptativos = calcular_rmse(imagen_filtro_adaptado, imagen_original)
+
+print("=== Comparación de RMSE ===")
+for region in ["fondo", "cuadrado", "circulo", "global"]:
+    err_glob = rmse_globales[region]
+    err_adap = rmse_adaptativos[region]
+    
+    print(f"Region: {region}")
+    print(f"  Filtro Global (sigma={sigma_kernel_global }): {err_glob:.6f}")
+    print(f"  Filtro Adaptativo:     {err_adap:.6f}")
+    print(f"  Mejora: {(err_glob - err_adap) / err_glob * 100:.2f}%")
+#============================================================================================================================
