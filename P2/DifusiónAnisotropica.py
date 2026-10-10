@@ -114,21 +114,19 @@ def graficar_mapa_c(imagen, funcion_c, **parametros_c):
 
     return fig, c_dict
 
-def rmse_imagenes(imagen_a, imagen_b, mascara=None):
+def rmse_imagenes(imagen_a, imagen_b):
 
     diff = imagen_a.astype(np.float64) - imagen_b.astype(np.float64)
-    if mascara is not None:
-        diff = diff[mascara]
     return np.sqrt(np.mean(diff**2))
 
 
-imagen = cv2.imread("Imagenes/gato.jfif")
+imagen = cv2.imread("Imagenes/gato.jfif")   
 imagen_gris = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
 imagen_gris = imagen_gris.astype(np.float64) / 255.0
 imagen_ruido = ruido_gauss(imagen_gris)
-imagen_dif_an_tv = difusion_anisotropica(imagen_ruido, c_tv, lambd = 1.25, iteraciones=50, epsilon= 0.0)
-imagen_dif_an_lap = difusion_anisotropica(imagen_ruido, funcion_c_laplaciano, lambd=0.125, iteraciones=50, gamma=0.5, epsilon=1.0)
-imagen_dif_an_grad = difusion_anisotropica(imagen_ruido, funcion_c_gradiente, lambd=0.125, iteraciones=50, epsilon=1.0)
+imagen_dif_an_tv = difusion_anisotropica(imagen_ruido, c_tv, lambd = 0.18, iteraciones=50, epsilon= 0.75)
+imagen_dif_an_lap = difusion_anisotropica(imagen_ruido, funcion_c_laplaciano, lambd=0.125, iteraciones=50, gamma=1.5, epsilon=2.5)
+imagen_dif_an_grad = difusion_anisotropica(imagen_ruido, funcion_c_gradiente, lambd=0.125, iteraciones=50, epsilon=0.3)
 
 
 '''Para poder visualizar correctamente las diferentes graficas, hay que descomentar la requerida y comentar las demás.'''
@@ -136,17 +134,17 @@ imagen_dif_an_grad = difusion_anisotropica(imagen_ruido, funcion_c_gradiente, la
 
 '''Grafica comparativa de la imagen ruidosa y los tres filtros aplicados'''
 
-'''fig, axs = plt.subplots(1, 4, figsize=(16,6))
+fig, axs = plt.subplots(1, 4, figsize=(16,6))
 axs[0].imshow(imagen_ruido, cmap="gray", vmin=0, vmax=1); axs[0].set_title("Ruidosa")
 axs[1].imshow(imagen_dif_an_tv, cmap="gray", vmin=0, vmax=1); axs[1].set_title("Filtro TV")
 axs[2].imshow(imagen_dif_an_lap, cmap="gray", vmin=0, vmax=1); axs[2].set_title("Filtro Laplaciano")
-axs[3].imshow(imagen_dif_an_grad, cmap="gray", vmin=0, vmax=1); axs[3].set_title("Filtro Propuesto 2")'''
+axs[3].imshow(imagen_dif_an_grad, cmap="gray", vmin=0, vmax=1); axs[3].set_title("Filtro Propuesto 2")
 
 '''Grafica del mapa del coeficiente de difusión c para un filtro específico'''
-#graficar_mapa_c(imagen_ruido, c_tv, epsilon=5.0)
+#graficar_mapa_c(imagen_ruido, funcion_c_gradiente, epsilon=0.5)
 
 '''Grafica de una unica imagen resultante'''
-plt.imshow(imagen_dif_an_tv, cmap="gray", vmin=0, vmax=1)
+#plt.imshow(imagen_dif_an_grad, cmap="gray", vmin=0, vmax=1)
 
 #=====================================================================================================================================
 
